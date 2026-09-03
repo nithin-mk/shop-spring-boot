@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${pageTitle})}">
+    <link rel="stylesheet" th:href="@{/css/forms.css}">
+    <link rel="stylesheet" th:href="@{/css/product.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navigation :: navigation(${path})}"></div>
+
+<main>
+    <div th:if="${errorMessage}" class="user-message user-message--error" th:text="${errorMessage}"></div>
+    <form class="product-form"
+          th:action="${editing} ? @{/admin/edit-product} : @{/admin/add-product}"
+          method="POST"
+          enctype="multipart/form-data">
+        <div class="form-control">
+            <label for="title">Title</label>
+            <input th:classappend="${#fields.hasErrors('title')} ? 'invalid'"
+                   type="text"
+                   name="title"
+                   id="title"
+                   th:value="${editing or hasError} ? ${product.title} : ''">
+        </div>
+        <div class="form-control">
+            <label for="image">Image</label>
+            <input type="file" name="image" id="image">
+        </div>
+        <div class="form-control">
+            <label for="price">Price</label>
+            <input th:classappend="${#fields.hasErrors('price')} ? 'invalid'"
+                   type="number"
+                   name="price"
+                   id="price"
+                   step="0.01"
+                   th:value="${editing or hasError} ? ${product.price} : ''">
+        </div>
+        <div class="form-control">
+            <label for="description">Description</label>
+            <textarea th:classappend="${#fields.hasErrors('description')} ? 'invalid'"
+                      name="description"
+                      id="description"
+                      rows="5"
+                      th:text="${editing or hasError} ? ${product.description} : ''"></textarea>
+        </div>
+        <input th:if="${editing}" type="hidden" th:value="${product.id}" name="productId">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button class="btn" type="submit" th:text="${editing} ? 'Update Product' : 'Add Product'"></button>
+    </form>
+</main>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

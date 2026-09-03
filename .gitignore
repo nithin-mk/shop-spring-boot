@@ -1,0 +1,47 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/gradle-wrapper.properties
+.gradletask/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+*.ipr_a
+out/
+.idea_modules/
+
+# Eclipse
+.settings/
+.classpath
+.project
+bin/
+target/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# macOS
+.DS_Store
+.AppleDouble
+.Spotlight-V100
+.Trashes
+
+# Logs
+*.log
+
+# Local env
+.env
+.env.local
+
+# Uploads (now using MinIO, but keep for dev fallback)
+uploads/
+
+# Kotlin compiled artifacts
+*.kotlin_module
+*.kotlin_script
+.kotlin/

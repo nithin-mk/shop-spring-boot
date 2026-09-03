@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/head :: head(${pageTitle})}">
+    <link rel="stylesheet" th:href="@{/css/product.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navigation :: navigation(${path})}"></div>
+
+<main>
+    <th:block th:if="${!prods.isEmpty()}">
+        <div class="grid">
+            <article class="card product-item" th:each="product : ${prods}">
+                <header class="card__header">
+                    <h1 class="product__title" th:text="${product.title}"></h1>
+                </header>
+                <div class="card__image">
+                    <img th:src="${imageUrls[product.id]}" th:alt="${product.title}">
+                </div>
+                <div class="card__content">
+                    <h2 class="product__price" th:text="'$' + ${product.price}"></h2>
+                    <p class="product__description" th:text="${product.description}"></p>
+                </div>
+                <div class="card__actions">
+                    <a th:href="@{'/products/' + ${product.id}}" class="btn">Details</a>
+                    <div th:replace="~{fragments/add-to-cart :: addToCart(${product})}" sec:authorize="isAuthenticated()"></div>
+                </div>
+            </article>
+        </div>
+        <div th:replace="~{fragments/pagination :: pagination(${currentPage}, ${nextPage}, ${previousPage}, ${lastPage}, ${hasNextPage}, ${hasPreviousPage})}"></div>
+    </th:block>
+    <h1 th:if="${prods.isEmpty()}">No Products Found!</h1>
+</main>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

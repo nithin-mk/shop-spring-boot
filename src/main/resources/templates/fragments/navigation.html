@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<div th:fragment="navigation(path)">
+    <div class="backdrop"></div>
+    <header class="main-header">
+        <button id="side-menu-toggle">Menu</button>
+        <nav class="main-header__nav">
+            <ul class="main-header__item-list">
+                <li class="main-header__item">
+                    <a th:classappend="${path == '/'} ? 'active'" href="/">Shop</a>
+                </li>
+                <li class="main-header__item">
+                    <a th:classappend="${path == '/products'} ? 'active'" href="/products">Products</a>
+                </li>
+                <li class="main-header__item" sec:authorize="isAuthenticated()">
+                    <a th:classappend="${path == '/cart'} ? 'active'" href="/cart">Cart</a>
+                </li>
+                <li class="main-header__item" sec:authorize="isAuthenticated()">
+                    <a th:classappend="${path == '/orders'} ? 'active'" href="/orders">Orders</a>
+                </li>
+                <li class="main-header__item" sec:authorize="isAuthenticated()">
+                    <a th:classappend="${path == '/admin/add-product'} ? 'active'" href="/admin/add-product">Add Product</a>
+                </li>
+                <li class="main-header__item" sec:authorize="isAuthenticated()">
+                    <a th:classappend="${path == '/admin/products'} ? 'active'" href="/admin/products">Admin Products</a>
+                </li>
+            </ul>
+            <ul class="main-header__item-list">
+                <li class="main-header__item" sec:authorize="!isAuthenticated()">
+                    <a th:classappend="${path == '/login'} ? 'active'" href="/login">Login</a>
+                </li>
+                <li class="main-header__item" sec:authorize="!isAuthenticated()">
+                    <a th:classappend="${path == '/signup'} ? 'active'" href="/signup">Signup</a>
+                </li>
+                <li class="main-header__item" sec:authorize="isAuthenticated()">
+                    <form action="/logout" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <nav class="mobile-nav">
+        <ul class="mobile-nav__item-list">
+            <li class="mobile-nav__item">
+                <a th:classappend="${path == '/'} ? 'active'" href="/">Shop</a>
+            </li>
+            <li class="mobile-nav__item">
+                <a th:classappend="${path == '/products'} ? 'active'" href="/products">Products</a>
+            </li>
+            <li class="mobile-nav__item" sec:authorize="isAuthenticated()">
+                <a th:classappend="${path == '/cart'} ? 'active'" href="/cart">Cart</a>
+            </li>
+            <li class="mobile-nav__item" sec:authorize="isAuthenticated()">
+                <a th:classappend="${path == '/orders'} ? 'active'" href="/orders">Orders</a>
+            </li>
+            <li class="mobile-nav__item" sec:authorize="isAuthenticated()">
+                <a th:classappend="${path == '/admin/add-product'} ? 'active'" href="/admin/add-product">Add Product</a>
+            </li>
+            <li class="mobile-nav__item" sec:authorize="isAuthenticated()">
+                <a th:classappend="${path == '/admin/products'} ? 'active'" href="/admin/products">Admin Products</a>
+            </li>
+            <li class="mobile-nav__item" sec:authorize="!isAuthenticated()">
+                <a th:classappend="${path == '/login'} ? 'active'" href="/login">Login</a>
+            </li>
+            <li class="mobile-nav__item" sec:authorize="!isAuthenticated()">
+                <a th:classappend="${path == '/signup'} ? 'active'" href="/signup">Signup</a>
+            </li>
+            <li class="mobile-nav__item" sec:authorize="isAuthenticated()">
+                <form action="/logout" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit">Logout</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>

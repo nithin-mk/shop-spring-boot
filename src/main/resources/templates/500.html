@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Error')}"></head>
+<body>
+<div th:replace="~{fragments/navigation :: navigation('/')}"></div>
+<h1>Some error occurred!</h1>
+<p>We're working on fixing this, sorry for the inconvenience!</p>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

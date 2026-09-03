@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<section th:fragment="pagination(currentPage, nextPage, previousPage, lastPage, hasNextPage, hasPreviousPage)"
+         class="pagination">
+    <a th:if="${currentPage != 1 and previousPage != 1}" href="?page=1">1</a>
+    <a th:if="${hasPreviousPage}" th:href="@{'?page=' + ${previousPage}}" th:text="${previousPage}"></a>
+    <a th:href="@{'?page=' + ${currentPage}}" th:text="${currentPage}" class="active"></a>
+    <a th:if="${hasNextPage}" th:href="@{'?page=' + ${nextPage}}" th:text="${nextPage}"></a>
+    <a th:if="${lastPage != currentPage and nextPage != lastPage}" th:href="@{'?page=' + ${lastPage}}" th:text="${lastPage}"></a>
+</section>
+</body>
+</html>

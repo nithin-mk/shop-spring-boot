@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${pageTitle})}">
+    <link rel="stylesheet" th:href="@{/css/cart.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navigation :: navigation(${path})}"></div>
+
+<main>
+    <div th:if="${errorMessage}" class="user-message user-message--error" th:text="${errorMessage}"></div>
+    <ul class="cart__item-list">
+        <li class="cart__item" th:each="p : ${products}">
+            <h1 th:text="${p.product.title}"></h1>
+            <h2 th:text="'Quantity: ' + ${p.quantity}"></h2>
+        </li>
+    </ul>
+    <div class="centered">
+        <h2 th:text="'Total: $' + ${totalSum}"></h2>
+    </div>
+    <div class="centered" th:if="${stripePublishableKey != null}">
+        <form action="/create-order" method="POST">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <script
+                src="https://checkout.stripe.com/checkout.js"
+                class="stripe-button"
+                th:attr="data-key=${stripePublishableKey},
+                         data-amount=${totalSum * 100},
+                         data-name='Your Order',
+                         data-description='All the items you ordered',
+                         data-image='https://stripe.com/img/documentation/checkout/marketplace.png',
+                         data-locale='auto',
+                         data-currency='usd'">
+            </script>
+        </form>
+    </div>
+    <div class="centered" th:if="${stripePublishableKey == null}">
+        <form action="/create-order" method="POST">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button class="btn" type="submit">Place Order</button>
+        </form>
+    </div>
+</main>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

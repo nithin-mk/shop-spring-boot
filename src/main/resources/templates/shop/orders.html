@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${pageTitle})}">
+    <link rel="stylesheet" th:href="@{/css/orders.css}">
+</head>
+<body>
+<div th:replace="~{fragments/navigation :: navigation(${path})}"></div>
+
+<main>
+    <h1 th:if="${orders.isEmpty()}">Nothing there!</h1>
+    <ul class="orders" th:if="${!orders.isEmpty()}">
+        <li class="orders__item" th:each="order : ${orders}">
+            <h1>Order - # <span th:text="${order.id}"></span> -
+                <a th:href="@{'/orders/' + ${order.id}}">Invoice</a>
+            </h1>
+            <ul class="orders__products">
+                <li class="orders__products-item" th:each="item : ${order.items}"
+                    th:text="${item.productTitle} + ' (' + ${item.quantity} + ')'"></li>
+            </ul>
+        </li>
+    </ul>
+</main>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>
