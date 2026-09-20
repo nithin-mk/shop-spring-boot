@@ -7,5 +7,6 @@ import java.util.Optional
 
 interface PasswordResetTokenRepository : JpaRepository<PasswordResetToken, Long> {
     fun findByToken(token: String): Optional<PasswordResetToken>
+
     fun deleteByUser(user: User)
 }

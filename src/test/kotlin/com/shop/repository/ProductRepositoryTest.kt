@@ -3,7 +3,8 @@ package com.shop.repository
 import com.shop.PostgresTestContainerConfig
 import com.shop.model.Product
 import com.shop.model.User
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
@@ -14,7 +15,6 @@ import java.math.BigDecimal
 @DataJpaTest
 @Import(PostgresTestContainerConfig::class)
 class ProductRepositoryTest {
-
     @Autowired
     lateinit var entityManager: TestEntityManager
 
@@ -30,8 +30,12 @@ class ProductRepositoryTest {
     fun `findAllByUser returns only products owned by that user`() {
         val user = savedUser()
         val other = entityManager.persist(User(email = "other@test.com", password = "hashedpassword"))
-        entityManager.persist(Product(title = "Mine", price = BigDecimal("5.00"), description = "desc_mine", imageUrl = "img.jpg", user = user))
-        entityManager.persist(Product(title = "Theirs", price = BigDecimal("10.00"), description = "desc_theirs", imageUrl = "img2.jpg", user = other))
+        entityManager.persist(
+            Product(title = "Mine", price = BigDecimal("5.00"), description = "desc_mine", imageUrl = "img.jpg", user = user),
+        )
+        entityManager.persist(
+            Product(title = "Theirs", price = BigDecimal("10.00"), description = "desc_theirs", imageUrl = "img2.jpg", user = other),
+        )
         entityManager.flush()
 
         val result = productRepository.findAllByUser(user)
@@ -43,7 +47,8 @@ class ProductRepositoryTest {
     @Test
     fun `save and findById round-trip`() {
         val user = savedUser()
-        val product = Product(title = "Round Trip", price = BigDecimal("3.50"), description = "test desc here", imageUrl = "img.jpg", user = user)
+        val product =
+            Product(title = "Round Trip", price = BigDecimal("3.50"), description = "test desc here", imageUrl = "img.jpg", user = user)
         entityManager.persistAndFlush(product)
 
         val found = productRepository.findById(product.id)

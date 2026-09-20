@@ -1,0 +1,74 @@
+{
+  "properties": [
+    {
+      "name": "shop.items-per-page",
+      "type": "java.lang.Integer",
+      "sourceType": "com.shop.config.ShopProperties",
+      "description": "Number of products shown per page on the shop and product-listing views.",
+      "defaultValue": 2
+    },
+    {
+      "name": "shop.minio.endpoint",
+      "type": "java.lang.String",
+      "sourceType": "com.shop.config.ShopProperties$Minio",
+      "description": "Hostname of the MinIO (or MinIO-compatible) server used for product image storage.",
+      "defaultValue": "localhost"
+    },
+    {
+      "name": "shop.minio.port",
+      "type": "java.lang.Integer",
+      "sourceType": "com.shop.config.ShopProperties$Minio",
+      "description": "Port the MinIO server listens on.",
+      "defaultValue": 9000
+    },
+    {
+      "name": "shop.minio.secure",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.shop.config.ShopProperties$Minio",
+      "description": "Whether to connect to MinIO over HTTPS instead of plain HTTP.",
+      "defaultValue": false
+    },
+    {
+      "name": "shop.minio.access-key",
+      "type": "java.lang.String",
+      "sourceType": "com.shop.config.ShopProperties$Minio",
+      "description": "Access key used to authenticate with MinIO.",
+      "defaultValue": "minioadmin"
+    },
+    {
+      "name": "shop.minio.secret-key",
+      "type": "java.lang.String",
+      "sourceType": "com.shop.config.ShopProperties$Minio",
+      "description": "Secret key used to authenticate with MinIO.",
+      "defaultValue": "minioadmin"
+    },
+    {
+      "name": "shop.minio.bucket",
+      "type": "java.lang.String",
+      "sourceType": "com.shop.config.ShopProperties$Minio",
+      "description": "Name of the MinIO bucket product images are uploaded to; created automatically on startup if it doesn't already exist.",
+      "defaultValue": "shop-spring-boot"
+    },
+    {
+      "name": "shop.stripe.secret-key",
+      "type": "java.lang.String",
+      "sourceType": "com.shop.config.ShopProperties$Stripe",
+      "description": "Stripe secret API key. Leave blank to run with payments disabled (checkout falls back to a plain \"Place Order\" button).",
+      "defaultValue": ""
+    },
+    {
+      "name": "shop.stripe.publishable-key",
+      "type": "java.lang.String",
+      "sourceType": "com.shop.config.ShopProperties$Stripe",
+      "description": "Stripe publishable key exposed to the checkout page's client-side Stripe Checkout widget.",
+      "defaultValue": ""
+    },
+    {
+      "name": "shop.upload.dir",
+      "type": "java.lang.String",
+      "sourceType": "com.shop.config.ShopProperties$Upload",
+      "description": "Local filesystem directory served at /uploads/** by WebConfig.",
+      "defaultValue": "uploads"
+    }
+  ]
+}

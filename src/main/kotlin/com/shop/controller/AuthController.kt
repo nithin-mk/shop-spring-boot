@@ -10,24 +10,28 @@ import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.BindingResult
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 data class SignupForm(
     @field:Email @field:NotBlank val email: String = "",
     @field:NotBlank @field:Size(min = 5) val password: String = "",
-    @field:NotBlank val confirmPassword: String = ""
+    @field:NotBlank val confirmPassword: String = "",
 )
 
 @Controller
 class AuthController(
     private val userService: UserService,
-    private val mailSender: JavaMailSender
+    private val mailSender: JavaMailSender,
 ) {
     @GetMapping("/login")
     fun loginPage(
         @RequestParam(required = false) error: String?,
-        model: Model
+        model: Model,
     ): String {
         model.addAttribute("errorMessage", if (error != null) "Invalid email or password." else null)
         model.addAttribute("oldInput", mapOf("email" to "", "password" to ""))
@@ -51,7 +55,7 @@ class AuthController(
     fun signup(
         @Valid @ModelAttribute form: SignupForm,
         bindingResult: BindingResult,
-        model: Model
+        model: Model,
     ): String {
         val oldInput = mapOf("email" to form.email, "password" to form.password, "confirmPassword" to form.confirmPassword)
         if (bindingResult.hasErrors()) {
@@ -85,7 +89,7 @@ class AuthController(
     @GetMapping("/reset")
     fun resetPage(
         @RequestParam(required = false) error: String?,
-        model: Model
+        model: Model,
     ): String {
         model.addAttribute("errorMessage", if (error != null) "No account with that email found." else null)
         model.addAttribute("pageTitle", "Reset Password")
@@ -96,7 +100,7 @@ class AuthController(
     @PostMapping("/reset")
     fun postReset(
         @RequestParam email: String,
-        redirectAttributes: RedirectAttributes
+        redirectAttributes: RedirectAttributes,
     ): String {
         val token = userService.createPasswordResetToken(email)
         if (token == null) {
@@ -109,14 +113,19 @@ class AuthController(
             msg.subject = "Password reset"
             msg.text = "Click this link to set a new password: http://localhost:8080/reset/$token"
             mailSender.send(msg)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
         return "redirect:/"
     }
 
     @GetMapping("/reset/{token}")
-    fun newPasswordPage(@PathVariable token: String, model: Model): String {
-        val resetToken = userService.findValidResetToken(token)
-            ?: return "redirect:/reset?error"
+    fun newPasswordPage(
+        @PathVariable token: String,
+        model: Model,
+    ): String {
+        val resetToken =
+            userService.findValidResetToken(token)
+                ?: return "redirect:/reset?error"
         model.addAttribute("errorMessage", null)
         model.addAttribute("userId", resetToken.user?.id)
         model.addAttribute("passwordToken", token)
@@ -129,7 +138,7 @@ class AuthController(
     fun postNewPassword(
         @RequestParam password: String,
         @RequestParam passwordToken: String,
-        model: Model
+        model: Model,
     ): String {
         val success = userService.resetPassword(passwordToken, password)
         if (!success) {

@@ -9,14 +9,18 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 
 @Service
-class ShopUserDetailsService(private val userRepository: UserRepository) : UserDetailsService {
+class ShopUserDetailsService(
+    private val userRepository: UserRepository,
+) : UserDetailsService {
     override fun loadUserByUsername(email: String): UserDetails {
-        val user = userRepository.findByEmail(email)
-            .orElseThrow { UsernameNotFoundException("No user found with email: $email") }
+        val user =
+            userRepository
+                .findByEmail(email)
+                .orElseThrow { UsernameNotFoundException("No user found with email: $email") }
         return User(
             user.email,
             user.password,
-            listOf(SimpleGrantedAuthority("ROLE_USER"))
+            listOf(SimpleGrantedAuthority("ROLE_USER")),
         )
     }
 }

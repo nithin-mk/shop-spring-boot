@@ -5,7 +5,7 @@ import com.shop.model.Product
 import com.shop.model.User
 import com.shop.repository.CartItemRepository
 import com.shop.repository.ProductRepository
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
@@ -20,7 +20,6 @@ import java.util.Optional
 
 @ExtendWith(MockitoExtension::class)
 class CartServiceTest {
-
     @Mock
     lateinit var cartItemRepository: CartItemRepository
 
@@ -31,7 +30,8 @@ class CartServiceTest {
     lateinit var cartService: CartService
 
     private val user = User(id = 1L, email = "test@test.com", password = "hashed")
-    private val product = Product(id = 10L, title = "Widget", price = BigDecimal("9.99"), description = "A widget", imageUrl = "img.jpg", user = user)
+    private val product =
+        Product(id = 10L, title = "Widget", price = BigDecimal("9.99"), description = "A widget", imageUrl = "img.jpg", user = user)
 
     @Test
     fun `addToCart creates new item when not in cart`() {
@@ -77,10 +77,11 @@ class CartServiceTest {
     @Test
     fun `getTotal returns sum of item prices`() {
         val p2 = Product(id = 11L, title = "Gadget", price = BigDecimal("5.00"), description = "desc", imageUrl = "img.jpg", user = user)
-        val items = listOf(
-            CartItem(id = 1L, user = user, product = product, quantity = 2),
-            CartItem(id = 2L, user = user, product = p2, quantity = 1)
-        )
+        val items =
+            listOf(
+                CartItem(id = 1L, user = user, product = product, quantity = 2),
+                CartItem(id = 2L, user = user, product = p2, quantity = 1),
+            )
         whenever(cartItemRepository.findByUserWithProduct(user)).thenReturn(items)
 
         val total = cartService.getTotal(user)

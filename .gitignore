@@ -45,3 +45,11 @@ uploads/
 *.kotlin_module
 *.kotlin_script
 .kotlin/
+
+# Playwright e2e (Node.js tooling)
+node_modules/
+playwright-report/
+test-results/
+
+# CodeGraph local index
+.codegraph/

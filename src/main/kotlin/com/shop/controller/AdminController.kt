@@ -12,14 +12,21 @@ import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.BindingResult
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.multipart.MultipartFile
 import java.math.BigDecimal
 
 data class ProductForm(
     @field:NotBlank @field:Size(min = 3) val title: String = "",
     @field:DecimalMin("0.01") val price: BigDecimal = BigDecimal.ZERO,
-    @field:NotBlank @field:Size(min = 5, max = 400) val description: String = ""
+    @field:NotBlank @field:Size(min = 5, max = 400) val description: String = "",
 )
 
 @Controller
@@ -27,10 +34,11 @@ data class ProductForm(
 class AdminController(
     private val productService: ProductService,
     private val imageStorageService: ImageStorageService,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
     private fun imageUrlsFor(products: List<com.shop.model.Product>) =
         products.associate { it.id to imageStorageService.presignedUrl(it.imageUrl) }
+
     @GetMapping("/add-product")
     fun showAddProduct(model: Model): String {
         model.addAttribute("editing", false)
@@ -49,7 +57,7 @@ class AdminController(
         bindingResult: BindingResult,
         @RequestParam("image") image: MultipartFile,
         auth: Authentication,
-        model: Model
+        model: Model,
     ): String {
         if (image.isEmpty) {
             model.addAttribute("editing", false)
@@ -76,7 +84,10 @@ class AdminController(
     }
 
     @GetMapping("/products")
-    fun adminProducts(auth: Authentication, model: Model): String {
+    fun adminProducts(
+        auth: Authentication,
+        model: Model,
+    ): String {
         val user = auth.currentUser(userRepository)
         val products = productService.findAllByUser(user)
         model.addAttribute("prods", products)
@@ -91,15 +102,18 @@ class AdminController(
         @PathVariable productId: Long,
         @RequestParam(required = false) edit: String?,
         auth: Authentication,
-        model: Model
+        model: Model,
     ): String {
         if (edit == null) return "redirect:/"
         val product = productService.findById(productId) ?: return "redirect:/"
+        val user = auth.currentUser(userRepository)
+        if (product.user?.id != user.id) return "redirect:/"
         model.addAttribute("editing", true)
         model.addAttribute("hasError", false)
         model.addAttribute("errorMessage", null)
         model.addAttribute("validationErrors", emptyList<Any>())
         model.addAttribute("product", product)
+        model.addAttribute("productId", productId)
         model.addAttribute("pageTitle", "Edit Product")
         model.addAttribute("path", "/admin/edit-product")
         return "admin/edit-product"
@@ -112,13 +126,14 @@ class AdminController(
         bindingResult: BindingResult,
         @RequestParam("image") image: MultipartFile,
         auth: Authentication,
-        model: Model
+        model: Model,
     ): String {
         if (bindingResult.hasErrors()) {
             model.addAttribute("editing", true)
             model.addAttribute("hasError", true)
             model.addAttribute("errorMessage", bindingResult.allErrors.first().defaultMessage)
             model.addAttribute("validationErrors", bindingResult.fieldErrors)
+            model.addAttribute("productId", productId)
             model.addAttribute("pageTitle", "Edit Product")
             model.addAttribute("path", "/admin/edit-product")
             return "admin/edit-product"
@@ -136,7 +151,10 @@ class AdminController(
 
     @DeleteMapping("/product/{productId}/delete")
     @ResponseBody
-    fun deleteProduct(@PathVariable productId: Long, auth: Authentication): Map<String, String> {
+    fun deleteProduct(
+        @PathVariable productId: Long,
+        auth: Authentication,
+    ): Map<String, String> {
         val user = auth.currentUser(userRepository)
         val product = productService.findById(productId)
         product?.imageUrl?.let { imageStorageService.delete(it) }

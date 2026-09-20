@@ -14,15 +14,19 @@ import java.util.UUID
 class UserService(
     private val userRepository: UserRepository,
     private val passwordResetTokenRepository: PasswordResetTokenRepository,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
 ) {
     fun existsByEmail(email: String): Boolean = userRepository.existsByEmail(email)
 
-    fun register(email: String, rawPassword: String): User {
-        val user = User(
-            email = email,
-            password = passwordEncoder.encode(rawPassword)!!
-        )
+    fun register(
+        email: String,
+        rawPassword: String,
+    ): User {
+        val user =
+            User(
+                email = email,
+                password = passwordEncoder.encode(rawPassword)!!,
+            )
         return userRepository.save(user)
     }
 
@@ -39,7 +43,10 @@ class UserService(
         return if (resetToken.isExpired()) null else resetToken
     }
 
-    fun resetPassword(token: String, newPassword: String): Boolean {
+    fun resetPassword(
+        token: String,
+        newPassword: String,
+    ): Boolean {
         val resetToken = findValidResetToken(token) ?: return false
         val user = resetToken.user ?: return false
         user.password = passwordEncoder.encode(newPassword)!!

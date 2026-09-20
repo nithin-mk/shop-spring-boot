@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class OrderService(
     private val orderRepository: OrderRepository,
-    private val cartService: CartService
+    private val cartService: CartService,
 ) {
     fun placeOrder(user: User): Order {
         val cartItems = cartService.getCartItems(user)
@@ -22,8 +22,8 @@ class OrderService(
                 OrderItem(
                     productTitle = product.title,
                     productPrice = product.price,
-                    quantity = cartItem.quantity
-                )
+                    quantity = cartItem.quantity,
+                ),
             )
         }
         val saved = orderRepository.save(order)

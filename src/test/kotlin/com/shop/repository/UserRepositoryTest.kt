@@ -2,7 +2,9 @@ package com.shop.repository
 
 import com.shop.PostgresTestContainerConfig
 import com.shop.model.User
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
@@ -12,7 +14,6 @@ import org.springframework.context.annotation.Import
 @DataJpaTest
 @Import(PostgresTestContainerConfig::class)
 class UserRepositoryTest {
-
     @Autowired
     lateinit var entityManager: TestEntityManager
 

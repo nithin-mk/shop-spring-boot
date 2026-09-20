@@ -11,12 +11,15 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class CartService(
     private val cartItemRepository: CartItemRepository,
-    private val productRepository: ProductRepository
+    private val productRepository: ProductRepository,
 ) {
     @Transactional(readOnly = true)
     fun getCartItems(user: User): List<CartItem> = cartItemRepository.findByUserWithProduct(user)
 
-    fun addToCart(user: User, productId: Long) {
+    fun addToCart(
+        user: User,
+        productId: Long,
+    ) {
         val product = productRepository.findById(productId).orElse(null) ?: return
         val existing = cartItemRepository.findByUserAndProductId(user, productId)
         if (existing.isPresent) {
@@ -28,7 +31,10 @@ class CartService(
         }
     }
 
-    fun removeFromCart(user: User, productId: Long) {
+    fun removeFromCart(
+        user: User,
+        productId: Long,
+    ) {
         val item = cartItemRepository.findByUserAndProductId(user, productId).orElse(null) ?: return
         cartItemRepository.delete(item)
     }

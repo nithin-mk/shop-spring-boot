@@ -1,0 +1,29 @@
+style:
+  MaxLineLength:
+    # The codebase's actual (ktlint-accepted) style runs a bit past detekt's
+    # 120-char default, mostly in test setup lines; 150 covers the longest
+    # lines here without forcing awkward wraps.
+    maxLineLength: 150
+  ReturnCount:
+    # Early-return guard clauses (validation checks, not-found checks) are
+    # the house style for controllers/services here and read more clearly
+    # than nesting the happy path.
+    max: 4
+
+performance:
+  SpreadOperator:
+    # runApplication<ShopApplication>(*args) is the standard, unavoidable
+    # Spring Boot Kotlin bootstrap idiom — there's no non-spread alternative.
+    active: false
+
+complexity:
+  LongParameterList:
+    # Spring MVC controller methods legitimately take a handful of
+    # request-bound parameters (path/request params, the bound form,
+    # BindingResult, Authentication, Model) — 6 is normal here, not a smell.
+    allowedFunctionParameters: 7
+    allowedConstructorParameters: 7
+  TooManyFunctions:
+    # One function per route is the natural shape for a controller; a
+    # handful of controllers sit just over the default of 11.
+    allowedFunctionsPerClass: 15

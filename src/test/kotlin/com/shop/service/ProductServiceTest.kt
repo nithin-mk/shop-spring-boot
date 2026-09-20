@@ -1,12 +1,16 @@
 package com.shop.service
 
+import com.shop.config.ShopProperties
 import com.shop.model.Product
 import com.shop.model.User
 import com.shop.repository.ProductRepository
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
@@ -18,21 +22,25 @@ import java.util.Optional
 
 @ExtendWith(MockitoExtension::class)
 class ProductServiceTest {
-
     @Mock
     lateinit var productRepository: ProductRepository
 
-    @InjectMocks
     lateinit var productService: ProductService
+
+    @BeforeEach
+    fun setUp() {
+        productService = ProductService(productRepository, ShopProperties())
+    }
 
     private val user = User(id = 1L, email = "test@test.com", password = "hashed")
 
     @Test
     fun `findAll returns paginated products`() {
-        val products = listOf(
-            Product(id = 1, title = "A", price = BigDecimal("9.99"), description = "Desc A", imageUrl = "img/a.jpg", user = user),
-            Product(id = 2, title = "B", price = BigDecimal("19.99"), description = "Desc B", imageUrl = "img/b.jpg", user = user)
-        )
+        val products =
+            listOf(
+                Product(id = 1, title = "A", price = BigDecimal("9.99"), description = "Desc A", imageUrl = "img/a.jpg", user = user),
+                Product(id = 2, title = "B", price = BigDecimal("19.99"), description = "Desc B", imageUrl = "img/b.jpg", user = user),
+            )
         val page = PageImpl(products, PageRequest.of(0, 2), 2)
         whenever(productRepository.findAll(any<PageRequest>())).thenReturn(page)
 
@@ -64,7 +72,8 @@ class ProductServiceTest {
 
     @Test
     fun `create saves and returns product`() {
-        val product = Product(id = 1, title = "New", price = BigDecimal("5.00"), description = "New desc", imageUrl = "img/n.jpg", user = user)
+        val product =
+            Product(id = 1, title = "New", price = BigDecimal("5.00"), description = "New desc", imageUrl = "img/n.jpg", user = user)
         whenever(productRepository.save(any())).thenReturn(product)
 
         val result = productService.create("New", BigDecimal("5.00"), "New desc", "img/n.jpg", user)

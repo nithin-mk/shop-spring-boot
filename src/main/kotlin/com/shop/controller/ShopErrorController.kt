@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 
 @Controller
 class ShopErrorController : ErrorController {
-
     @RequestMapping("/error")
-    fun handleError(request: HttpServletRequest, model: Model): String {
+    fun handleError(
+        request: HttpServletRequest,
+        model: Model,
+    ): String {
         val status = request.getAttribute("jakarta.servlet.error.status_code") as? Int
         model.addAttribute("pageTitle", "Error")
         model.addAttribute("path", "/error")

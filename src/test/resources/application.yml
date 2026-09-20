@@ -1,0 +1,14 @@
+spring:
+  docker:
+    compose:
+      enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  mail:
+    host: localhost
+    port: 1025
+
+shop:
+  upload:
+    dir: /tmp/shop-test-uploads

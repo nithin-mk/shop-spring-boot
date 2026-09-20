@@ -14,11 +14,15 @@ import com.shop.service.ProductService
 import com.shop.service.StripeService
 import com.shop.util.currentUser
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
 class ShopController(
@@ -27,10 +31,20 @@ class ShopController(
     private val orderService: OrderService,
     private val userRepository: UserRepository,
     private val imageStorageService: ImageStorageService,
-    private val stripeService: StripeService
+    private val stripeService: StripeService,
 ) {
+    companion object {
+        private const val CENTS_PER_UNIT = 100
+        private const val INVOICE_TITLE_FONT_SIZE = 26f
+        private const val INVOICE_ITEM_FONT_SIZE = 14f
+        private const val INVOICE_TOTAL_FONT_SIZE = 20f
+    }
+
     @GetMapping("/")
-    fun index(@RequestParam(defaultValue = "1") page: Int, model: Model): String {
+    fun index(
+        @RequestParam(defaultValue = "1") page: Int,
+        model: Model,
+    ): String {
         val productPage = productService.findAll(page)
         model.addAttribute("prods", productPage.content)
         model.addAttribute("imageUrls", productPage.content.associate { it.id to imageStorageService.presignedUrl(it.imageUrl) })
@@ -46,7 +60,10 @@ class ShopController(
     }
 
     @GetMapping("/products")
-    fun products(@RequestParam(defaultValue = "1") page: Int, model: Model): String {
+    fun products(
+        @RequestParam(defaultValue = "1") page: Int,
+        model: Model,
+    ): String {
         val productPage = productService.findAll(page)
         model.addAttribute("prods", productPage.content)
         model.addAttribute("imageUrls", productPage.content.associate { it.id to imageStorageService.presignedUrl(it.imageUrl) })
@@ -62,7 +79,10 @@ class ShopController(
     }
 
     @GetMapping("/products/{productId}")
-    fun productDetail(@PathVariable productId: Long, model: Model): String {
+    fun productDetail(
+        @PathVariable productId: Long,
+        model: Model,
+    ): String {
         val product = productService.findById(productId) ?: return "redirect:/"
         model.addAttribute("product", product)
         model.addAttribute("imageUrl", imageStorageService.presignedUrl(product.imageUrl))
@@ -72,7 +92,10 @@ class ShopController(
     }
 
     @GetMapping("/cart")
-    fun cart(auth: Authentication, model: Model): String {
+    fun cart(
+        auth: Authentication,
+        model: Model,
+    ): String {
         val user = auth.currentUser(userRepository)
         val items = cartService.getCartItems(user)
         model.addAttribute("products", items)
@@ -82,19 +105,28 @@ class ShopController(
     }
 
     @PostMapping("/cart")
-    fun addToCart(@RequestParam productId: Long, auth: Authentication): String {
+    fun addToCart(
+        @RequestParam productId: Long,
+        auth: Authentication,
+    ): String {
         cartService.addToCart(auth.currentUser(userRepository), productId)
         return "redirect:/cart"
     }
 
     @PostMapping("/cart-delete-item")
-    fun removeFromCart(@RequestParam productId: Long, auth: Authentication): String {
+    fun removeFromCart(
+        @RequestParam productId: Long,
+        auth: Authentication,
+    ): String {
         cartService.removeFromCart(auth.currentUser(userRepository), productId)
         return "redirect:/cart"
     }
 
     @GetMapping("/checkout")
-    fun checkout(auth: Authentication, model: Model): String {
+    fun checkout(
+        auth: Authentication,
+        model: Model,
+    ): String {
         val user = auth.currentUser(userRepository)
         val items = cartService.getCartItems(user)
         val total = cartService.getTotal(user)
@@ -107,11 +139,15 @@ class ShopController(
         return "shop/checkout"
     }
 
+    @Suppress("TooGenericExceptionCaught")
+    // The Stripe SDK can throw several distinct exception types for a declined
+    // or failed charge; catching Exception here is deliberate so any of them
+    // surfaces as a friendly checkout error instead of a 500.
     @PostMapping("/create-order")
     fun createOrder(
         @RequestParam(required = false) stripeToken: String?,
         auth: Authentication,
-        model: Model
+        model: Model,
     ): String {
         val user = auth.currentUser(userRepository)
         if (stripeService.enabled) {
@@ -127,7 +163,7 @@ class ShopController(
                 return "shop/checkout"
             }
             val total = cartService.getTotal(user)
-            val amountCents = total.multiply(java.math.BigDecimal(100)).toLong()
+            val amountCents = total.multiply(java.math.BigDecimal(CENTS_PER_UNIT)).toLong()
             try {
                 stripeService.charge(stripeToken, amountCents, "Demo Order")
             } catch (e: Exception) {
@@ -146,7 +182,10 @@ class ShopController(
     }
 
     @GetMapping("/orders")
-    fun orders(auth: Authentication, model: Model): String {
+    fun orders(
+        auth: Authentication,
+        model: Model,
+    ): String {
         val user = auth.currentUser(userRepository)
         val orders = orderService.getOrdersForUser(user)
         model.addAttribute("orders", orders)
@@ -156,12 +195,20 @@ class ShopController(
     }
 
     @GetMapping("/orders/{orderId}")
-    fun invoice(@PathVariable orderId: Long, auth: Authentication, response: HttpServletResponse) {
+    fun invoice(
+        @PathVariable orderId: Long,
+        auth: Authentication,
+        response: HttpServletResponse,
+    ) {
         val user = auth.currentUser(userRepository)
-        val order = orderService.findById(orderId)
-            ?: run { response.sendError(404); return }
+        val order =
+            orderService.findById(orderId)
+                ?: run {
+                    response.sendError(HttpStatus.NOT_FOUND.value())
+                    return
+                }
         if (order.user?.id != user.id) {
-            response.sendError(403)
+            response.sendError(HttpStatus.FORBIDDEN.value())
             return
         }
         response.contentType = MediaType.APPLICATION_PDF_VALUE
@@ -169,7 +216,10 @@ class ShopController(
         generateInvoicePdf(order, response.outputStream)
     }
 
-    private fun generateInvoicePdf(order: com.shop.model.Order, out: java.io.OutputStream) {
+    private fun generateInvoicePdf(
+        order: com.shop.model.Order,
+        out: java.io.OutputStream,
+    ) {
         val pdfWriter = PdfWriter(out)
         val pdfDoc = PdfDocument(pdfWriter)
         val document = Document(pdfDoc)
@@ -178,8 +228,8 @@ class ShopController(
             document.add(
                 Paragraph("Invoice")
                     .setFont(boldFont)
-                    .setFontSize(26f)
-                    .setUnderline()
+                    .setFontSize(INVOICE_TITLE_FONT_SIZE)
+                    .setUnderline(),
             )
             document.add(Paragraph("-----------------------"))
             var totalPrice = java.math.BigDecimal.ZERO
@@ -187,11 +237,11 @@ class ShopController(
                 totalPrice = totalPrice.add(item.productPrice.multiply(java.math.BigDecimal(item.quantity)))
                 document.add(
                     Paragraph("${item.productTitle} - ${item.quantity} x \$${item.productPrice}")
-                        .setFontSize(14f)
+                        .setFontSize(INVOICE_ITEM_FONT_SIZE),
                 )
             }
             document.add(Paragraph("---"))
-            document.add(Paragraph("Total Price: \$$totalPrice").setFontSize(20f))
+            document.add(Paragraph("Total Price: \$$totalPrice").setFontSize(INVOICE_TOTAL_FONT_SIZE))
         } finally {
             document.close()
         }

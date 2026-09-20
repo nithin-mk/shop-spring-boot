@@ -11,7 +11,6 @@ import org.springframework.security.web.SecurityFilterChain
 @Configuration
 @EnableWebSecurity
 class SecurityConfig {
-
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
@@ -20,11 +19,13 @@ class SecurityConfig {
         http
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/admin/**").authenticated()
-                    .requestMatchers("/cart", "/cart-delete-item", "/orders/**", "/checkout", "/create-order").authenticated()
-                    .anyRequest().permitAll()
-            }
-            .formLogin { form ->
+                    .requestMatchers("/admin/**")
+                    .authenticated()
+                    .requestMatchers("/cart", "/cart-delete-item", "/orders/**", "/checkout", "/create-order")
+                    .authenticated()
+                    .anyRequest()
+                    .permitAll()
+            }.formLogin { form ->
                 form
                     .loginPage("/login")
                     .loginProcessingUrl("/login")
@@ -33,14 +34,12 @@ class SecurityConfig {
                     .defaultSuccessUrl("/", true)
                     .failureUrl("/login?error")
                     .permitAll()
-            }
-            .logout { logout ->
+            }.logout { logout ->
                 logout
                     .logoutUrl("/logout")
                     .logoutSuccessUrl("/")
                     .permitAll()
-            }
-            .csrf { csrf ->
+            }.csrf { csrf ->
                 csrf.ignoringRequestMatchers("/admin/product/**")
             }
         return http.build()

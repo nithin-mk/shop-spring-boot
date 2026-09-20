@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head(${pageTitle})}">
+<head>
+    <th:block th:replace="~{fragments/head :: head(${pageTitle})}"></th:block>
     <link rel="stylesheet" th:href="@{/css/orders.css}">
 </head>
 <body>

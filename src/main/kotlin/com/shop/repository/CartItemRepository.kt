@@ -10,7 +10,10 @@ interface CartItemRepository : JpaRepository<CartItem, Long> {
     @Query("SELECT ci FROM CartItem ci JOIN FETCH ci.product WHERE ci.user = :user")
     fun findByUserWithProduct(user: User): List<CartItem>
 
-    fun findByUserAndProductId(user: User, productId: Long): Optional<CartItem>
+    fun findByUserAndProductId(
+        user: User,
+        productId: Long,
+    ): Optional<CartItem>
 
     fun deleteByUser(user: User)
 }

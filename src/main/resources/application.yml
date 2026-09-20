@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: shop-spring-boot
+
+  # Virtual threads (Project Loom)
+  threads:
+    virtual:
+      enabled: true
+
+  # JPA / Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  # Multipart uploads
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  # Mail (configure via env vars in production)
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+# shop.* is bound to com.shop.config.ShopProperties
+shop:
+  # MinIO object storage (mirrors Node.js MINIO_* env vars)
+  minio:
+    endpoint: ${MINIO_ENDPOINT:localhost}
+    port: ${MINIO_PORT:9000}
+    secure: ${MINIO_SECURE:false}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    bucket: ${MINIO_BUCKET:shop-spring-boot}
+
+  # Stripe (set STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY env vars)
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    publishable-key: ${STRIPE_PUBLISHABLE_KEY:}
+
+  # Pagination
+  items-per-page: 2
+
+logging:
+  level:
+    com.shop: INFO
