@@ -1,5 +1,6 @@
 package com.shop.integration
 
+import com.shop.MinioTestContainerConfig
 import com.shop.PostgresTestContainerConfig
 import com.shop.model.User
 import com.shop.repository.UserRepository
@@ -27,7 +28,7 @@ import org.springframework.web.context.WebApplicationContext
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(PostgresTestContainerConfig::class)
+@Import(PostgresTestContainerConfig::class, MinioTestContainerConfig::class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ShopIntegrationTest {
     @Autowired
