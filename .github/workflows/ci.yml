@@ -56,6 +56,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # processResources compiles the static TypeScript sources via npm/tsc.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
       - name: Compile
         run: ./gradlew compileKotlin compileTestKotlin --console=plain
 
@@ -84,6 +90,12 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
 
       - uses: gradle/actions/setup-gradle@v4
+
+      # processResources compiles the static TypeScript sources via npm/tsc.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
       # Repository/integration tests spin up their own Postgres via
       # Testcontainers, and ImageStorageServiceTest spins up pgsty/silo

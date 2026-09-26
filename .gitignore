@@ -51,5 +51,8 @@ node_modules/
 playwright-report/
 test-results/
 
+# Compiled from src/main/typescript by the compileTypeScript Gradle task
+/src/main/resources/static/js/*.js
+
 # CodeGraph local index
 .codegraph/

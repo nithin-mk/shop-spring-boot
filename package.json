@@ -5,9 +5,11 @@
   "description": "Playwright end-to-end tests for the Kotlin/Spring Boot shop app",
   "scripts": {
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "build:ts": "tsc -p tsconfig.json"
   },
   "devDependencies": {
-    "@playwright/test": "^1.62.1"
+    "@playwright/test": "^1.62.1",
+    "typescript": "^7.0.2"
   }
 }

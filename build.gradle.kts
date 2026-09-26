@@ -1,3 +1,4 @@
+import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -129,4 +130,34 @@ allOpen {
     annotation("jakarta.persistence.Entity")
     annotation("jakarta.persistence.MappedSuperclass")
     annotation("jakarta.persistence.Embeddable")
+}
+
+// Static JS served to the browser is authored in TypeScript under
+// src/main/typescript and compiled to src/main/resources/static/js, which is
+// where processResources picks it up from — same as any other static asset.
+val npmExecutable = if (OperatingSystem.current().isWindows) "npm.cmd" else "npm"
+
+val npmInstall =
+    tasks.register<Exec>("npmInstall") {
+        group = "build"
+        description = "Installs npm dependencies needed to compile the static TypeScript sources"
+        inputs.file("package.json")
+        inputs.file("package-lock.json")
+        outputs.dir("node_modules")
+        commandLine(npmExecutable, "ci")
+    }
+
+val compileTypeScript =
+    tasks.register<Exec>("compileTypeScript") {
+        group = "build"
+        description = "Compiles TypeScript sources under src/main/typescript into static/js"
+        dependsOn(npmInstall)
+        inputs.dir("src/main/typescript")
+        inputs.file("tsconfig.json")
+        outputs.dir("src/main/resources/static/js")
+        commandLine(npmExecutable, "run", "build:ts")
+    }
+
+tasks.named("processResources") {
+    dependsOn(compileTypeScript)
 }

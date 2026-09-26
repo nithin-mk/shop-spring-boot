@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["ES2017", "DOM"],
+    "strict": true,
+    "noEmitOnError": true,
+    "outDir": "src/main/resources/static/js",
+    "rootDir": "src/main/typescript"
+  },
+  "include": ["src/main/typescript/**/*.ts"]
+}
