@@ -29,7 +29,8 @@
  *  7.  Cart   — add item, view cart, remove item
  *  8.  Checkout — page loads with Stripe widget after adding to cart
  *  9.  Orders  — empty state
- * 10.  Password-reset page renders
+ * 10.  Password-reset — page renders, and reset mail is actually delivered
+ *      (verified via the Mailpit REST API, see compose.yaml)
  * 11.  404 page
  * 12.  Navigation — active link highlighting
  * 13.  CSS / layout — key visual properties (colours, fonts, breakpoints)
@@ -64,6 +65,35 @@ function uniqueEmail(prefix = 'pw'): string {
 /** Generates a unique product title so parallel/independent tests never collide */
 function uniqueTitle(prefix = 'Product'): string {
   return `${prefix}-${uniqueSuffix()}`;
+}
+
+/** Mailpit (SMTP test server from compose.yaml) REST API base URL */
+const MAILPIT_URL = process.env.MAILPIT_URL || 'http://localhost:8025';
+
+interface MailpitMessageSummary {
+  Subject: string;
+  Snippet: string;
+}
+
+/**
+ * Polls Mailpit's search API for a message sent to `email` — the app sends
+ * password-reset mail asynchronously relative to the HTTP response, so the
+ * message may not have arrived the instant the form POST completes.
+ */
+async function waitForMailTo(
+  email: string,
+  attempts = 20
+): Promise<MailpitMessageSummary> {
+  const query = encodeURIComponent(`to:"${email}"`);
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const res = await fetch(`${MAILPIT_URL}/api/v1/search?query=${query}`);
+    if (res.ok) {
+      const data = (await res.json()) as { messages: MailpitMessageSummary[] };
+      if (data.messages.length > 0) return data.messages[0];
+    }
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }
+  throw new Error(`No email received for ${email} in Mailpit within timeout`);
 }
 
 async function signup(page: Page, email: string, password = TEST_PASSWORD): Promise<void> {
@@ -543,6 +573,22 @@ test.describe('Password reset', () => {
     await page.fill('input[name=email]', 'nobody@nowhere.com');
     await page.click('button[type=submit]');
     await expect(page.locator('body')).not.toContainText('Internal Server Error');
+  });
+
+  test('submitting reset for a known account delivers a reset email via Mailpit', async ({
+    page
+  }) => {
+    const email = uniqueEmail('mail');
+    await signup(page, email);
+
+    await page.goto('/reset');
+    await page.fill('input[name=email]', email);
+    await page.click('button[type=submit]');
+    await expect(page).toHaveURL('/');
+
+    const message = await waitForMailTo(email);
+    expect(message.Subject).toBe('Password reset');
+    expect(message.Snippet).toContain('http://localhost:8080/reset/');
   });
 });
 
