@@ -16,7 +16,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.math.BigDecimal
-import java.util.Optional
 
 @ExtendWith(MockitoExtension::class)
 class OrderServiceTest {
@@ -62,14 +61,14 @@ class OrderServiceTest {
     @Test
     fun `findById returns order when found`() {
         val order = Order(id = 1L, user = user)
-        whenever(orderRepository.findById(1L)).thenReturn(Optional.of(order))
+        whenever(orderRepository.findByIdWithItems(1L)).thenReturn(order)
 
         assertEquals(order, orderService.findById(1L))
     }
 
     @Test
     fun `findById returns null when not found`() {
-        whenever(orderRepository.findById(99L)).thenReturn(Optional.empty())
+        whenever(orderRepository.findByIdWithItems(99L)).thenReturn(null)
 
         assertNull(orderService.findById(99L))
     }

@@ -3,6 +3,7 @@ spring:
     compose:
       enabled: false
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: create-drop
   mail:

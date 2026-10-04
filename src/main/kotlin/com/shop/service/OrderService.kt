@@ -35,5 +35,5 @@ class OrderService(
     fun getOrdersForUser(user: User): List<Order> = orderRepository.findByUserWithItems(user)
 
     @Transactional(readOnly = true)
-    fun findById(id: Long): Order? = orderRepository.findById(id).orElse(null)
+    fun findById(id: Long): Order? = orderRepository.findByIdWithItems(id)
 }

@@ -1,9 +1,19 @@
 package com.shop.integration
 
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfReader
+import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor
 import com.shop.MinioTestContainerConfig
 import com.shop.PostgresTestContainerConfig
+import com.shop.model.Order
+import com.shop.model.OrderItem
+import com.shop.model.PasswordResetToken
 import com.shop.model.User
+import com.shop.repository.OrderRepository
+import com.shop.repository.PasswordResetTokenRepository
 import com.shop.repository.UserRepository
+import org.hamcrest.Matchers.containsString
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -21,10 +31,13 @@ import org.springframework.test.annotation.Commit
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
+import java.io.ByteArrayInputStream
+import java.math.BigDecimal
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,6 +49,12 @@ class ShopIntegrationTest {
 
     @Autowired
     lateinit var userRepository: UserRepository
+
+    @Autowired
+    lateinit var orderRepository: OrderRepository
+
+    @Autowired
+    lateinit var passwordResetTokenRepository: PasswordResetTokenRepository
 
     @Autowired
     lateinit var passwordEncoder: PasswordEncoder
@@ -144,5 +163,53 @@ class ShopIntegrationTest {
         mockMvc
             .perform(get("/checkout"))
             .andExpect(status().isOk)
+    }
+
+    @Test
+    @WithMockUser(username = "user@test.com")
+    fun `orders page lists the order items`() {
+        val user = userRepository.findByEmail("user@test.com").orElseThrow()
+        val order = Order(user = user)
+        order.addItem(OrderItem(productTitle = "Orders Page Book", productPrice = BigDecimal("5.00"), quantity = 3))
+        orderRepository.save(order)
+
+        mockMvc
+            .perform(get("/orders"))
+            .andExpect(status().isOk)
+            .andExpect(content().string(containsString("Orders Page Book")))
+    }
+
+    @Test
+    fun `reset password page renders for a valid token`() {
+        val user = userRepository.findByEmail("user@test.com").orElseThrow()
+        passwordResetTokenRepository.save(PasswordResetToken(token = "integration-reset-token", user = user))
+
+        mockMvc
+            .perform(get("/reset/integration-reset-token"))
+            .andExpect(status().isOk)
+            .andExpect(content().string(containsString("integration-reset-token")))
+    }
+
+    // open-in-view is off, so the order's lazy items must be fetched by the
+    // query itself — mocked unit tests can't catch a LazyInitializationException.
+    @Test
+    @WithMockUser(username = "user@test.com")
+    fun `invoice PDF lists the order items`() {
+        val user = userRepository.findByEmail("user@test.com").orElseThrow()
+        val order = Order(user = user)
+        order.addItem(OrderItem(productTitle = "Invoice Test Book", productPrice = BigDecimal("12.50"), quantity = 2))
+        val saved = orderRepository.save(order)
+
+        val pdf =
+            mockMvc
+                .perform(get("/orders/${saved.id}"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                .andReturn()
+                .response.contentAsByteArray
+
+        val text = PdfDocument(PdfReader(ByteArrayInputStream(pdf))).use { PdfTextExtractor.getTextFromPage(it.getPage(1)) }
+        assertTrue(text.contains("Invoice Test Book - 2 x \$12.50"), text)
+        assertTrue(text.contains("Total Price: \$25.00"), text)
     }
 }
